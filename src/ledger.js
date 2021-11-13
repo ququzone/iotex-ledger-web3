@@ -21,7 +21,7 @@ class Ledger extends Component {
                 address: result.address
             })
         } catch (err) {
-            console.log(`fail to connect ledger ${err}`)
+            console.log(`fail to connect ledger: ${err}`)
         }
     }
 
