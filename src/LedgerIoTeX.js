@@ -3,7 +3,8 @@ import Transport from "@ledgerhq/hw-transport-webusb";
 import { IoTeXApp } from "./lib/iotex_ledger";
 import { ethers, utils, BigNumber } from 'ethers';
 import { from } from "./lib/iotex_address";
-import action from './lib/action_pb';
+import action from "./lib/action_pb";
+import { serialize } from "./lib/transaction";
 
 class Ledger extends Component {
     constructor(props) {
@@ -33,7 +34,7 @@ class Ledger extends Component {
 
     handleTransfer = async () => {
         const provider = new ethers.providers.JsonRpcProvider(
-            'https://babel-api.mainnet.iotex.io'
+            'https://babel-ledger.onrender.com'
         );
         const nonce = await provider.getTransactionCount(this.state.address)
 
@@ -43,9 +44,8 @@ class Ledger extends Component {
             gasLimit: 10000,
             gasPrice: BigNumber.from("1000000000000"),
             data: "0x",
-            value: utils.parseEther("1.0"),
-            // special chainId
-            chainId: 999999
+            value: BigNumber.from('1000000000000000000'),
+            chainId: 4689
         }
 
         let isContract = false
@@ -61,7 +61,7 @@ class Ledger extends Component {
         act.setChainid(0);
         if (isContract) {
             const pbExecution = new action.Execution();
-            pbExecution.setAmount(transaction.value);
+            pbExecution.setAmount(transaction.value.toString());
             if (transaction.to === "") {
                 pbExecution.setContract("");
             } else {
@@ -80,7 +80,9 @@ class Ledger extends Component {
         }
         const signature = await this.state.iotex.sign([44, 304, 0, 0, 0], act.serializeBinary());
 
-        const result = await provider.sendTransaction(utils.serializeTransaction(transaction, signature.signature))
+        console.log(serialize(transaction, signature.signature));
+
+        const result = await provider.sendTransaction(serialize(transaction, signature.signature))
         this.setState({
             transferred: true,
             transferHash: result.hash,
