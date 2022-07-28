@@ -1,5 +1,5 @@
 import './App.css';
-import Ledger from './LedgerIoTeX';
+import Ledger from './LedgerIoTeXNative';
 
 function App() {
   return (
